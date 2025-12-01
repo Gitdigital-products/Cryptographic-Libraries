@@ -1,0 +1,14 @@
+
+· Step A: Find Official Test Vectors. Get the NIST FIPS 180-4 SHA-256 test vectors. I'll help you create a third_party/test_vectors/sha256.json file.
+· Step B: Write the Tests First. Create tests/kat/sha2_kat.c. This program should load the test vectors, call your (not-yet-written) SHA-256 function, and compare the output.
+· Step C: Implement the Primitive. Now, write src/primitives/hash/sha2.c. Focus on:
+  · Correctness: Make it pass all KATs.
+  · Constant-Time: Ensure the core operations (especially the compression function) have no data-dependent branches or array indices. Use bitwise operations.
+  · Memory Safety: No buffer overflows. Use explicit bounds.
+  · Clean API: E.g., crypto_hash_sha256(uint8_t out[32], const uint8_t *in, size_t inlen).
+
+Key Implementation Consideration: For your first version, you might write it from scratch to learn. However, strongly consider using a reference-then-optimize approach:
+
+1. First, write a clear, readable, and obviously correct version that passes KATs.
+2. Then, profile it.
+3. Finally, optimize for speed while strictly maintaining constant-time properties. Compare your output against a verified implementation like HACL* after every change.
