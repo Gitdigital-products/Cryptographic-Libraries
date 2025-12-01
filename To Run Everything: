@@ -1,0 +1,24 @@
+# 1. Build and run all tests
+make clean
+make test
+
+# 2. Run comprehensive tests (install libjansson first)
+# sudo apt-get install libjansson-dev
+cd tests/kat
+cc -I../../include -I../.. sha2_comprehensive.c ../../build/libcryptolib.a -ljansson -o comprehensive
+./comprehensive
+
+# 3. Run fuzzing
+make fuzz-setup
+make fuzz-run
+
+# 4. Check CI will work
+git add .
+git commit -m "Complete SHA-256 implementation with all features
+
+- Incremental hashing API (init/update/final)
+- Performance optimizations with platform-specific code
+- Comprehensive test vectors including NIST official tests
+- Full CI fuzzing integration with libFuzzer
+- Memory safety and constant-time operations"
+git push
