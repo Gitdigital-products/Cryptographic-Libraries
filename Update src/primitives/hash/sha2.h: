@@ -1,0 +1,34 @@
+#ifndef SHA2_H
+#define SHA2_H
+
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Opaque context structure definition
+struct sha256_ctx {
+    uint32_t state[8];          // Intermediate hash state
+    uint64_t total_len;         // Total bytes processed
+    uint8_t buffer[64];         // Buffer for incomplete blocks
+    size_t buflen;              // Bytes currently in buffer
+    bool finalized;             // Whether final() has been called
+};
+
+// Internal functions
+void sha256_compress(uint32_t state[8], const uint8_t block[64]);
+uint32_t be32dec(const uint8_t *bytes);
+void be32enc(uint8_t *bytes, uint32_t val);
+void be64enc(uint8_t *bytes, uint64_t val);
+
+// Public API
+int crypto_hash_sha256(uint8_t out[32], const uint8_t *in, size_t inlen);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // SHA2_H
