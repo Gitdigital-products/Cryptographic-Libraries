@@ -1,0 +1,77 @@
+name: Fuzzing
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM
+  workflow_dispatch:      # Manual trigger
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/primitives/hash/**'
+      - 'tests/fuzz/**'
+
+jobs:
+  libfuzzer:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang llvm-dev libtool-bin make
+        
+    - name: Build fuzzer
+      run: |
+        CC=clang CXX=clang++ make fuzz
+        
+    - name: Run libFuzzer for 300 seconds
+      run: |
+        timeout 300 ./build/fuzz_sha2 \
+          -max_total_time=300 \
+          -artifact_prefix=./fuzz_artifacts/ \
+          -print_final_stats=1 \
+          ./fuzz_corpus 2>&1 | tee fuzzer.log
+          
+    - name: Upload artifacts if crashes found
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: fuzzer-artifacts
+        path: |
+          ./fuzz_artifacts/
+          ./fuzzer.log
+          
+    - name: Upload corpus (on schedule)
+      if: success() && github.event_name == 'schedule'
+      uses: actions/upload-artifact@v3
+      with:
+        name: fuzz-corpus
+        path: ./fuzz_corpus/
+        retention-days: 7
+        
+  oss-fuzz:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'  # Manual only
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up OSS-Fuzz
+      run: |
+        git clone https://github.com/google/oss-fuzz.git
+        cd oss-fuzz
+        python3 infra/helper.py build_image crypto-lib
+        python3 infra/helper.py build_fuzzers --sanitizer address crypto-lib ../
+        
+    - name: Run OSS-Fuzz
+      run: |
+        cd oss-fuzz
+        timeout 600 python3 infra/helper.py run_fuzzer crypto-lib fuzz_sha2
+        
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./oss-fuzz/build/out/crypto-lib/report/coverage.json
+        flags: fuzzing
