@@ -1,0 +1,20 @@
+// Main SHA-256 function (one-shot, uses incremental API internally)
+int crypto_hash_sha256(uint8_t out[32], const uint8_t *in, size_t inlen) {
+    sha256_ctx *ctx = sha256_init();
+    if (!ctx) {
+        return -1;
+    }
+    
+    if (sha256_update(ctx, in, inlen) != 0) {
+        sha256_free(ctx);
+        return -1;
+    }
+    
+    if (sha256_final(ctx, out) != 0) {
+        sha256_free(ctx);
+        return -1;
+    }
+    
+    sha256_free(ctx);
+    return 0;
+}
