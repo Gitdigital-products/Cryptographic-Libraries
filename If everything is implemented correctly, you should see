@@ -1,0 +1,10 @@
+Running SHA-256 Known Answer Tests...
+=====================================
+
+✓ Test 1: Empty message
+✓ Test 2: abc
+✓ Test 3: abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq
+
+=====================================
+Results: 3/3 tests passed
+SUCCESS: All tests passed!
