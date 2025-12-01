@@ -1,0 +1,29 @@
+1. Enhance the Test Suite (tests/)
+
+· Unit Tests: Add tests/unit/test_sha2.c for edge cases (empty input, exact block size, multi-block).
+· Property-Based Tests: Use a framework like quickcheck for C (or write simple random tests). For example: hash(x) == hash(x), or test incremental vs. one-shot hashing.
+
+2. Set Up GitHub Actions (.github/workflows/)
+
+· ci.yml: Runs on every push/pull request.
+  · Build the library with -Wall -Wextra -Werror -pedantic.
+  · Run all unit tests and KATs.
+  · Run basic sanitizers (AddressSanitizer, UndefinedBehaviorSanitizer).
+· fuzz.yml: Can be scheduled (e.g., nightly) or run on demand.
+  · Sets up a fuzzing job using libFuzzer.
+  · The target is tests/fuzz/fuzz_sha2.c – a simple function that takes fuzzer input and calls crypto_hash_sha256.
+
+Example fuzz_sha2.c snippet:
+
+```c
+#include "../src/primitives/hash/sha2.h"
+#include <stdint.h>
+#include <stddef.h>
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    uint8_t hash[32];
+    // The fuzzer will provide random data/lengths. We test for crashes.
+    crypto_hash_sha256(hash, data, size);
+    // Optional: Compare with a known-good library for correctness?
+    return 0;
+}
