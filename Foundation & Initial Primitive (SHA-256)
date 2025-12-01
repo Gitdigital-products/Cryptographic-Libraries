@@ -1,0 +1,30 @@
+Cryptographic-Libraries/
+├── src/
+│   ├── primitives/
+│   │   ├── hash/
+│   │   │   ├── sha2.c
+│   │   │   ├── sha2.h
+│   │   │   └── internal/          # For internal state/constants if needed
+│   │   └── (future: aes/, ecc/)
+│   └── utils/
+│       ├── endian.h
+│       └── secure_zero.c
+├── include/crypto_lib/            # Public API headers
+│   └── hash.h
+├── tests/
+│   ├── unit/
+│   │   └── test_sha2.c
+│   ├── kat/                       # Known Answer Tests
+│   │   └── sha2_kat.c
+│   └── fuzz/                      # Fuzzing targets
+│       └── fuzz_sha2.c
+├── third_party/                   # For audit scripts, test vectors
+│   └── test_vectors/
+│       └── sha256.json
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── fuzz.yml
+├── Makefile (or CMakeLists.txt)
+├── README.md
+└── SECURITY.md                    # Security policy & reporting
