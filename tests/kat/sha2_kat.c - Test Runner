@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "../../include/crypto_lib/hash.h"
+
+// Simple hex string to binary conversion
+static int hex2bin(const char *hex, uint8_t *bin, size_t bin_len) {
+    size_t hex_len = strlen(hex);
+    if (hex_len % 2 != 0 || hex_len / 2 > bin_len) {
+        return -1;
+    }
+    
+    for (size_t i = 0; i < hex_len; i += 2) {
+        char byte_str[3] = {hex[i], hex[i+1], '\0'};
+        bin[i/2] = (uint8_t)strtol(byte_str, NULL, 16);
+    }
+    return 0;
+}
+
+// Compare binary to hex string
+static int compare_bin_to_hex(const uint8_t *bin, size_t bin_len, const char *hex) {
+    uint8_t expected[bin_len];
+    if (hex2bin(hex, expected, bin_len) != 0) {
+        return -1;
+    }
+    return memcmp(bin, expected, bin_len) == 0 ? 0 : 1;
+}
+
+int main() {
+    // TODO: Load test vectors from third_party/test_vectors/sha256.json
+    // For now, hardcode the abc test
+    
+    printf("Running SHA-256 Known Answer Tests...\n");
+    
+    // Test 1: Empty message
+    {
+        const char *message_hex = "";
+        const char *expected_hex = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+        uint8_t digest[32];
+        
+        crypto_hash_sha256(digest, (const uint8_t *)"", 0);
+        
+        if (compare_bin_to_hex(digest, 32, expected_hex) == 0) {
+            printf("✓ Test 1 (empty): PASS\n");
+        } else {
+            printf("✗ Test 1 (empty): FAIL\n");
+            return 1;
+        }
+    }
+    
+    // Test 2: "abc"
+    {
+        const char *message_hex = "616263";
+        const char *expected_hex = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        uint8_t message[3];
+        uint8_t digest[32];
+        
+        hex2bin(message_hex, message, 3);
+        crypto_hash_sha256(digest, message, 3);
+        
+        if (compare_bin_to_hex(digest, 32, expected_hex) == 0) {
+            printf("✓ Test 2 (abc): PASS\n");
+        } else {
+            printf("✗ Test 2 (abc): FAIL\n");
+            // Print actual and expected for debugging
+            printf("  Expected: %s\n", expected_hex);
+            printf("  Got:      ");
+            for (int i = 0; i < 32; i++) printf("%02x", digest[i]);
+            printf("\n");
+            return 1;
+        }
+    }
+    
+    printf("All tests completed.\n");
+    return 0;
+}
