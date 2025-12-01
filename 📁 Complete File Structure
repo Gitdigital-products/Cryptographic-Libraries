@@ -1,0 +1,80 @@
+crypto-library/
+├── LICENSE
+├── README.md
+├── SECURITY.md
+├── CONTRIBUTING.md
+├── Makefile
+├── CMakeLists.txt
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   ├── fuzzing.yml
+│   │   └── audit.yml
+├── include/                   # Public headers
+│   ├── crypto_common.h
+│   ├── hash.h
+│   ├── signature.h
+│   ├── encryption.h
+│   ├── kdf.h
+│   └── types.h
+├── src/                      # Core implementations
+│   ├── internal/
+│   │   ├── utils.c
+│   │   ├── utils.h
+│   │   ├── bigint.c
+│   │   ├── bigint.h
+│   │   ├── field_arithmetic.c
+│   │   └── field_arithmetic.h
+│   ├── hash/
+│   │   ├── sha256.c
+│   │   ├── sha256.h
+│   │   ├── keccak.c
+│   │   ├── keccak.h
+│   │   └── hash.c
+│   ├── signature/
+│   │   ├── ecdsa.c
+│   │   ├── ecdsa.h
+│   │   ├── ed25519.c
+│   │   ├── ed25519.h
+│   │   └── schnorr.c
+│   ├── encryption/
+│   │   ├── aes_gcm.c
+│   │   ├── aes_gcm.h
+│   │   ├── chacha20poly1305.c
+│   │   └── chacha20poly1305.h
+│   └── kdf/
+│       ├── hkdf.c
+│       ├── hkdf.h
+│       ├── pbkdf2.c
+│       └── pbkdf2.h
+├── tests/                    # Comprehensive test suite
+│   ├── unit/
+│   │   ├── test_hash.c
+│   │   ├── test_signature.c
+│   │   ├── test_encryption.c
+│   │   └── test_kdf.c
+│   ├── vectors/             # Known test vectors
+│   │   ├── sha256_vectors.h
+│   │   ├── ecdsa_vectors.h
+│   │   └── aes_gcm_vectors.h
+│   ├── integration/
+│   │   └── test_integration.c
+│   └── property/
+│       └── test_properties.c
+├── benchmarks/              # Performance testing
+│   ├── bench_hash.c
+│   ├── bench_signature.c
+│   └── bench_encryption.c
+├── fuzz/                    # Fuzzing targets
+│   ├── fuzz_hash.c
+│   ├── fuzz_signature.c
+│   └── fuzz_encryption.c
+├── docs/                    # Documentation
+│   ├── API.md
+│   ├── SECURITY_GUIDELINES.md
+│   ├── IMPLEMENTATION.md
+│   └── AUDIT_REPORTS.md
+└── scripts/                 # Build/utility scripts
+    ├── audit.sh
+    ├── codegen.py
+    └── constant_time_check.py
