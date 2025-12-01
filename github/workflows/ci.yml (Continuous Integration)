@@ -1,0 +1,25 @@
+name: CI Pipeline
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: make
+      - run: make test
+      
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: SAST Scan
+        uses: github/codeql-action@v2
+      - name: Dependency Check
+        uses: snyk/security@master
+      
+  fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: make fuzz
