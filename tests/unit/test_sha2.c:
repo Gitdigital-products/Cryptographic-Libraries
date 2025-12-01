@@ -1,0 +1,133 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include "../../include/crypto_lib/hash.h"
+
+// Simple test utilities
+#define ASSERT(condition, message) \
+    do { \
+        if (!(condition)) { \
+            printf("FAIL: %s\n", message); \
+            return 0; \
+        } \
+    } while(0)
+
+#define TEST(name) \
+    printf("Running test: %s... ", name); \
+    if (test_##name()) { \
+        printf("PASS\n"); \
+    } else { \
+        printf("FAIL\n"); \
+        return 1; \
+    }
+
+// Test 1: Empty string hash consistency
+static int test_empty_string() {
+    uint8_t digest1[32], digest2[32];
+    
+    // Hash empty string twice
+    crypto_hash_sha256(digest1, NULL, 0);
+    crypto_hash_sha256(digest2, NULL, 0);
+    
+    ASSERT(memcmp(digest1, digest2, 32) == 0, 
+           "Empty string hash not consistent");
+    return 1;
+}
+
+// Test 2: Single byte hash
+static int test_single_byte() {
+    uint8_t digest[32];
+    uint8_t message = 0x41; // 'A'
+    
+    crypto_hash_sha256(digest, &message, 1);
+    
+    // Just verify it produces some output (not all zeros)
+    int all_zero = 1;
+    for (int i = 0; i < 32; i++) {
+        if (digest[i] != 0) {
+            all_zero = 0;
+            break;
+        }
+    }
+    
+    ASSERT(!all_zero, "Single byte produced all-zero hash");
+    return 1;
+}
+
+// Test 3: Block boundary tests
+static int test_block_boundaries() {
+    uint8_t digest[32];
+    
+    // Test exactly 64 bytes (one block)
+    uint8_t block64[64];
+    memset(block64, 0x61, 64); // All 'a's
+    
+    crypto_hash_sha256(digest, block64, 64);
+    
+    // Test 55 bytes (fits in one block with padding)
+    uint8_t block55[55];
+    memset(block55, 0x62, 55); // All 'b's
+    crypto_hash_sha256(digest, block55, 55);
+    
+    // Test 56 bytes (requires padding in second block)
+    uint8_t block56[56];
+    memset(block56, 0x63, 56); // All 'c's
+    crypto_hash_sha256(digest, block56, 56);
+    
+    // Test 63 bytes
+    uint8_t block63[63];
+    memset(block63, 0x64, 63); // All 'd's
+    crypto_hash_sha256(digest, block63, 63);
+    
+    return 1;
+}
+
+// Test 4: Incremental vs one-shot (to be implemented later)
+static int test_incremental() {
+    // TODO: Implement when incremental API is ready
+    return 1;
+}
+
+// Test 5: Random data test
+static int test_random_data() {
+    srand(time(NULL));
+    
+    for (int i = 0; i < 100; i++) {
+        size_t len = rand() % 1024;
+        uint8_t *data = malloc(len);
+        uint8_t digest1[32], digest2[32];
+        
+        if (!data) continue;
+        
+        // Fill with random data
+        for (size_t j = 0; j < len; j++) {
+            data[j] = rand() & 0xFF;
+        }
+        
+        // Hash twice
+        crypto_hash_sha256(digest1, data, len);
+        crypto_hash_sha256(digest2, data, len);
+        
+        ASSERT(memcmp(digest1, digest2, 32) == 0,
+               "Random data hash not consistent");
+        
+        free(data);
+    }
+    
+    return 1;
+}
+
+int main() {
+    printf("Running SHA-256 Unit Tests\n");
+    printf("==========================\n\n");
+    
+    TEST(empty_string);
+    TEST(single_byte);
+    TEST(block_boundaries);
+    TEST(random_data);
+    
+    printf("\n==========================\n");
+    printf("All unit tests passed!\n");
+    return 0;
+}
