@@ -1,0 +1,38 @@
+#include "signature/ecdsa.h"
+#include "vectors/ecdsa_vectors.h"
+#include <assert.h>
+
+void test_ecdsa_known_vectors() {
+    ecdsa_private_key priv;
+    ecdsa_public_key pub;
+    ecdsa_signature sig;
+    
+    // Test vector from RFC 6979
+    memcpy(priv.data, test_priv_key, 32);
+    memcpy(pub.data, test_pub_key, 64);
+    
+    // Sign
+    assert(ecdsa_sign(&priv, test_message, 
+                     sizeof(test_message), &sig) == CRYPTO_SUCCESS);
+    
+    // Verify
+    assert(ecdsa_verify(&pub, &sig, test_message, 
+                       sizeof(test_message)) == CRYPTO_SUCCESS);
+    
+    // Tamper detection
+    uint8_t tampered_msg[32];
+    memcpy(tampered_msg, test_message, 32);
+    tampered_msg[0] ^= 0x01;
+    assert(ecdsa_verify(&pub, &sig, tampered_msg, 32) == CRYPTO_FAILURE);
+}
+
+void test_ecdsa_edge_cases() {
+    // Test with zero private key
+    ecdsa_private_key zero_key = {0};
+    assert(ecdsa_generate_keypair(&zero_key, NULL) == CRYPTO_INVALID_INPUT);
+    
+    // Test with maximum private key
+    ecdsa_private_key max_key;
+    memset(max_key.data, 0xFF, 32);
+    assert(ecdsa_generate_keypair(&max_key, NULL) == CRYPTO_INVALID_INPUT);
+}
