@@ -1,0 +1,40 @@
+// tests/bench/bench_sha2.c
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+#include "../../include/crypto_lib/hash.h"
+
+#define MB (1024 * 1024)
+#define ITERATIONS 100
+#define BLOCK_SIZE 8192
+
+int main() {
+    uint8_t data[BLOCK_SIZE];
+    uint8_t digest[32];
+    clock_t start, end;
+    double total_time;
+    
+    // Initialize with some data
+    memset(data, 0x61, BLOCK_SIZE); // All 'a's
+    
+    printf("Benchmarking SHA-256...\n");
+    
+    start = clock();
+    
+    for (int i = 0; i < ITERATIONS; i++) {
+        crypto_hash_sha256(digest, data, BLOCK_SIZE);
+    }
+    
+    end = clock();
+    total_time = (double)(end - start) / CLOCKS_PER_SEC;
+    
+    double bytes_processed = (double)BLOCK_SIZE * ITERATIONS;
+    double mb_per_sec = (bytes_processed / MB) / total_time;
+    
+    printf("Processed %.2f MB in %.2f seconds\n", 
+           bytes_processed / MB, total_time);
+    printf("Speed: %.2f MB/s\n", mb_per_sec);
+    printf("%.2f hashes per second\n", ITERATIONS / total_time);
+    
+    return 0;
+}
