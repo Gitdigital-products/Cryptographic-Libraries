@@ -1,0 +1,12 @@
+mkdir -p tests/fuzz/corpus
+# Empty input
+echo -n "" > tests/fuzz/corpus/empty
+# Single byte
+echo -n "a" > tests/fuzz/corpus/single_a
+# Exactly one block
+head -c 64 /dev/zero > tests/fuzz/corpus/block_zeros
+head -c 64 /dev/urandom > tests/fuzz/corpus/block_random
+# Various sizes
+for i in 1 7 8 9 15 16 17 31 32 33 63 64 65 127 128 129; do
+    head -c $i /dev/urandom > tests/fuzz/corpus/size_$i
+done
