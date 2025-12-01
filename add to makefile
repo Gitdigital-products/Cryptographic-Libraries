@@ -1,0 +1,4 @@
+# Add to the TEST_SRC variable
+TEST_SRC = $(wildcard $(TEST_DIR)/unit/*.c) \
+           $(wildcard $(TEST_DIR)/kat/*.c) \
+           $(wildcard $(TEST_DIR)/bench/*.c)
