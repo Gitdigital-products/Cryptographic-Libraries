@@ -1,0 +1,3 @@
+mkdir -p src/primitives/hash src/utils include/crypto_lib \
+         tests/unit tests/kat tests/fuzz \
+         third_party/test_vectors .github/workflows
