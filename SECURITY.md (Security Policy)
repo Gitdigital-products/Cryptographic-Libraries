@@ -1,0 +1,15 @@
+# Security Policy
+
+## Supported Versions
+- v1.x: Security updates only
+- v2.x: Active development
+
+## Reporting Vulnerabilities
+Email: security@yourproject.org
+PGP Key: [Key ID]
+
+## Security Features
+- Constant-time implementations
+- Heap clearing for sensitive data
+- Side-channel resistance
+- Input validation
