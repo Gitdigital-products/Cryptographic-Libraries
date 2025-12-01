@@ -1,0 +1,15 @@
+# Add optimization flags
+OPT_CFLAGS = -O3 -march=native -flto -funroll-loops
+LIB_CFLAGS = $(CFLAGS) $(OPT_CFLAGS) -I./include -I./src -fPIC
+
+# Add optimized source
+OPT_SRC = src/primitives/hash/sha2_opt.c
+SRC_FILES = $(wildcard $(SRC_DIR)/primitives/hash/*.c) \
+            $(wildcard $(SRC_DIR)/utils/*.c) \
+            $(OPT_SRC)
+
+# Add benchmark target
+bench: static
+	$(CC) $(TEST_CFLAGS) $(OPT_CFLAGS) tests/bench/bench_sha2.c \
+		$(BUILD_DIR)/$(LIB_NAME) -o $(BUILD_DIR)/bench_sha2
+	./$(BUILD_DIR)/bench_sha2
