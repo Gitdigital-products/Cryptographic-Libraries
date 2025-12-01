@@ -1,0 +1,9 @@
+# Initialize the project
+git add .
+git commit -m "Initial project structure with SHA-256 skeleton
+
+- Added Makefile with build, test, and fuzz targets
+- Created CI workflow for GitHub Actions
+- Added NIST test vectors for SHA-256
+- Implemented skeleton SHA-256 code with dummy implementation
+- Added test runner for Known Answer Tests"
