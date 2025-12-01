@@ -1,0 +1,76 @@
+# Compiler and flags
+CC = gcc
+CFLAGS = -std=c99 -Wall -Wextra -Werror -pedantic \
+         -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+SANITIZE_CFLAGS = -fsanitize=address -fsanitize=undefined -fno-sanitize-recover
+TEST_CFLAGS = $(CFLAGS) -I./include -I./tests
+LIB_CFLAGS = $(CFLAGS) -I./include -fPIC
+
+# Directories
+SRC_DIR = src
+TEST_DIR = tests
+INCLUDE_DIR = include/crypto_lib
+BUILD_DIR = build
+
+# Source files
+SRC_FILES = $(wildcard $(SRC_DIR)/primitives/hash/*.c) \
+            $(wildcard $(SRC_DIR)/utils/*.c)
+OBJ_FILES = $(SRC_FILES:.c=.o)
+
+# Test files
+TEST_SRC = $(wildcard $(TEST_DIR)/unit/*.c) \
+           $(wildcard $(TEST_DIR)/kat/*.c)
+
+# Targets
+LIB_NAME = libcryptolib.a
+SHARED_NAME = libcryptolib.so
+
+.PHONY: all clean test test-sanitize fuzz
+
+all: static shared
+
+static: $(BUILD_DIR)/$(LIB_NAME)
+
+shared: $(BUILD_DIR)/$(SHARED_NAME)
+
+# Static library
+$(BUILD_DIR)/$(LIB_NAME): $(OBJ_FILES)
+	@mkdir -p $(BUILD_DIR)
+	ar rcs $@ $^
+
+# Shared library
+$(BUILD_DIR)/$(SHARED_NAME): $(OBJ_FILES)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) -shared -o $@ $^
+
+# Compile source files
+%.o: %.c
+	$(CC) $(LIB_CFLAGS) -c $< -o $@
+
+# Tests
+test: static
+	@echo "Building and running tests..."
+	@for test_file in $(TEST_SRC); do \
+		test_name=$$(basename $$test_file .c); \
+		echo "Building $$test_name..."; \
+		$(CC) $(TEST_CFLAGS) $$test_file $(BUILD_DIR)/$(LIB_NAME) -o $(BUILD_DIR)/$$test_name; \
+		echo "Running $$test_name..."; \
+		./$(BUILD_DIR)/$$test_name || exit 1; \
+	done
+	@echo "All tests passed!"
+
+test-sanitize: CFLAGS += $(SANITIZE_CFLAGS)
+test-sanitize: clean test
+
+# Fuzzing build
+fuzz: clean
+	clang -fsanitize=fuzzer,address,undefined -I./include tests/fuzz/fuzz_sha2.c src/primitives/hash/sha2.c -o $(BUILD_DIR)/fuzz_sha2
+	@echo "Run fuzzing with: ./$(BUILD_DIR)/fuzz_sha2 -max_total_time=300"
+
+clean:
+	rm -rf $(BUILD_DIR) $(OBJ_FILES)
+
+install: shared
+	cp $(BUILD_DIR)/$(SHARED_NAME) /usr/local/lib/
+	cp include/crypto_lib/*.h /usr/local/include/crypto_lib/
+	ldconfig
