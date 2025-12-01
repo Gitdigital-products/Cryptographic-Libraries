@@ -1,0 +1,2 @@
+· Path A (Advisory): Use HACL* (specifically the EverCrypt portable C implementations) as your golden reference. In your CI, add a step that compares the output of your SHA-256 against HACL*'s SHA-256 for thousands of random inputs. This catches regression bugs.
+· Path B (Direct Use): For ultimate assurance on a specific primitive, you could import the HACL C code for that primitive* (e.g., Hacl_SHA2_sha256) into your src/primitives/hash/ directory, wrap it with your API, and make it your primary implementation. This means you are leveraging the formal verification directly.
