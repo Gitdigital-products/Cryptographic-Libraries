@@ -1,0 +1,10 @@
+# Run all tests
+make clean
+make test
+
+# Run with sanitizers
+make test-sanitize
+
+# Run fuzzing (for a short time to test)
+make fuzz
+# Then run: ./build/fuzz_sha2 -max_total_time=10
