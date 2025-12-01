@@ -1,0 +1,41 @@
+#ifndef ECDSA_SECP256K1_H
+#define ECDSA_SECP256K1_H
+
+#include "types.h"
+
+#define ECDSA_PRIVATE_KEY_SIZE 32
+#define ECDSA_PUBLIC_KEY_SIZE 64
+#define ECDSA_SIGNATURE_SIZE 64
+
+typedef struct {
+    uint8_t data[ECDSA_PRIVATE_KEY_SIZE];
+} ecdsa_private_key;
+
+typedef struct {
+    uint8_t data[ECDSA_PUBLIC_KEY_SIZE];
+} ecdsa_public_key;
+
+typedef struct {
+    uint8_t r[32];
+    uint8_t s[32];
+} ecdsa_signature;
+
+// Key generation
+crypto_result ecdsa_generate_keypair(ecdsa_private_key *priv,
+                                     ecdsa_public_key *pub);
+
+// Deterministic signing (RFC 6979)
+crypto_result ecdsa_sign(const ecdsa_private_key *priv,
+                         const uint8_t *msg, size_t msg_len,
+                         ecdsa_signature *sig);
+
+// Verification
+crypto_result ecdsa_verify(const ecdsa_public_key *pub,
+                           const ecdsa_signature *sig,
+                           const uint8_t *msg, size_t msg_len);
+
+// Constant-time comparison
+bool ecdsa_signature_equal(const ecdsa_signature *a,
+                           const ecdsa_signature *b);
+
+#endif
