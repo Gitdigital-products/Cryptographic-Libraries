@@ -1,0 +1,23 @@
+#include <stdint.h>
+#include <stddef.h>
+#include "signature/ecdsa.h"
+
+extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (size < 64) return 0;
+    
+    ecdsa_private_key priv;
+    ecdsa_public_key pub;
+    ecdsa_signature sig;
+    
+    // Use first 32 bytes as private key
+    memcpy(priv.data, data, 32);
+    
+    // Use next 32 bytes as message
+    const uint8_t *msg = data + 32;
+    size_t msg_len = size - 32;
+    
+    // Try to sign (should handle invalid inputs gracefully)
+    ecdsa_sign(&priv, msg, msg_len, &sig);
+    
+    return 0;
+}
