@@ -1,0 +1,29 @@
+# Fuzzing targets
+FUZZ_CORPUS = tests/fuzz/corpus
+FUZZ_ARTIFACTS = fuzz_artifacts
+
+fuzz-setup: clean
+	@mkdir -p $(BUILD_DIR) $(FUZZ_ARTIFACTS)
+	@echo "Fuzzing corpus initialized"
+
+fuzz-run: fuzz
+	@echo "Running libFuzzer for 60 seconds..."
+	@timeout 60 ./$(BUILD_DIR)/fuzz_sha2 \
+		-max_total_time=60 \
+		-artifact_prefix=$(FUZZ_ARTIFACTS)/ \
+		$(FUZZ_CORPUS) 2>&1 | tee fuzzer.log
+	@echo "Fuzzing completed. Check fuzzer.log for details."
+
+fuzz-clean:
+	rm -rf $(FUZZ_ARTIFACTS) fuzzer.log
+
+# AFL++ fuzzing (alternative)
+AFL_CC = afl-gcc
+AFL_CXX = afl-g++
+
+fuzz-afl: clean
+	@echo "Building with AFL++..."
+	$(AFL_CC) -fsanitize=address,undefined -I./include \
+		tests/fuzz/fuzz_sha2.c src/primitives/hash/sha2.c \
+		-o $(BUILD_DIR)/fuzz_sha2_afl
+	@echo "Run with: afl-fuzz -i $(FUZZ_CORPUS) -o $(FUZZ_ARTIFACTS) -- ./$(BUILD_DIR)/fuzz_sha2_afl"
