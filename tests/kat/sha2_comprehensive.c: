@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <jansson.h>  // JSON parsing library
+#include "../../include/crypto_lib/hash.h"
+
+// Install libjansson: sudo apt-get install libjansson-dev
+
+// Test incremental hashing
+static int test_incremental_vs_one_shot(const uint8_t *data, size_t len) {
+    uint8_t digest_one_shot[32];
+    uint8_t digest_incremental[32];
+    
+    // One-shot
+    if (crypto_hash_sha256(digest_one_shot, data, len) != 0) {
+        return 0;
+    }
+    
+    // Incremental
+    sha256_ctx *ctx = sha256_init();
+    if (!ctx) return 0;
+    
+    // Simulate chunked updates (various chunk sizes)
+    size_t chunk_size = 7; // Prime number to test boundary conditions
+    size_t processed = 0;
+    
+    while (processed < len) {
+        size_t remaining = len - processed;
+        size_t this_chunk = (chunk_size < remaining) ? chunk_size : remaining;
+        
+        if (sha256_update(ctx, data + processed, this_chunk) != 0) {
+            sha256_free(ctx);
+            return 0;
+        }
+        processed += this_chunk;
+    }
+    
+    if (sha256_final(ctx, digest_incremental) != 0) {
+        sha256_free(ctx);
+        return 0;
+    }
+    
+    sha256_free(ctx);
+    
+    // Compare
+    if (memcmp(digest_one_shot, digest_incremental, 32) != 0) {
+        printf("  One-shot and incremental results differ!\n");
+        return 0;
+    }
+    
+    return 1;
+}
+
+// Run tests from JSON file
+static int run_json_tests(const char *filename) {
+    json_t *root;
+    json_error_t error;
+    
+Update Makefile for optimizations:
+
+```makefile
+# Add optimization flags
+OPT_CFLAGS = -O3 -march=native -flto -funroll-loops
+LIB_CFLAGS = $(CFLAGS) $(OPT_CFLAGS) -I./include -I./src -fPIC
+
+# Add optimized source
+OPT_SRC = src/primitives/hash/sha2_opt.c
+SRC_FILES = $(wildcard $(SRC_DIR)/primitives/hash/*.c) \
+            $(wildcard $(SRC_DIR)/utils/*.c) \
+            $(OPT_SRC)
+
+# Add benchmark target
+bench: static
+	$(CC) $(TEST_CFLAGS) $(OPT_CFLAGS) tests/bench/bench_sha2.c \
+		$(BUILD_DIR)/$(LIB_NAME) -o $(BUILD_DIR)/bench_sha2
+	./$(BUILD_DIR)/bench_sha2
