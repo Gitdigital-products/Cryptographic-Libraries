@@ -1,0 +1,25 @@
+# Cryptography Library Audit Checklist
+
+## Core Requirements
+- [ ] All operations are constant-time
+- [ ] No secret-dependent branches or memory accesses
+- [ ] Proper input validation on all public APIs
+- [ ] Secure memory zeroing for sensitive data
+- [ ] Protection against timing attacks
+
+## Algorithm-Specific Checks
+### ECDSA
+- [ ] RFC 6979 deterministic signatures implemented
+- [ ] Replay attack protection
+- [ ] Signature malleability addressed
+
+### AES-GCM
+- [ ] IV uniqueness guaranteed
+- [ ] Authentication tag verification
+- [ ] Maximum message length enforcement
+
+## Testing Requirements
+- [ ] 100% branch coverage
+- [ ] Known-answer test vectors from standards
+- [ ] Fuzzing for 24+ hours
+- [ ] Power analysis simulation
