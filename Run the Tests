@@ -1,0 +1,7 @@
+# First, update the Makefile to include the new header
+# In your Makefile, update the LIB_CFLAGS to include src directory:
+# LIB_CFLAGS = $(CFLAGS) -I./include -I./src -fPIC
+
+# Clean and rebuild
+make clean
+make test
