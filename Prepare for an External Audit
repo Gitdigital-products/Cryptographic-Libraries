@@ -1,0 +1,8 @@
+
+· When: Your code is complete, all tests pass, fuzzing has run for days without finding crashes, and you have a clear API.
+· What to provide auditors:
+  · A detailed specification document of what you implemented.
+  · The test suite and results.
+  · A list of potential side-channel concerns you identified.
+  · The security properties you claim for each function.
+· Finding Auditors: Look at other open-source crypto projects (Libsodium, OpenSSL audit reports). Companies like NCC Group, Trail of Bits, Quarkslab, Cure53 often do such work. This can be costly but is essential for v1.0 of a crypto library.
