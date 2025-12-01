@@ -1,0 +1,37 @@
+CC = gcc
+CFLAGS = -O3 -Wall -Wextra -Werror -pedantic \
+         -fstack-protector-strong -D_FORTIFY_SOURCE=2 \
+         -fvisibility=hidden -Wstrict-overflow=5
+
+# Security flags
+SECURITY_FLAGS = -fno-strict-aliasing -fwrapv \
+                 -fPIE -Wl,-z,relro,-z,now
+
+# Test flags
+TEST_FLAGS = -fsanitize=address,undefined
+
+SRC = $(wildcard src/**/*.c src/*.c)
+OBJ = $(SRC:.c=.o)
+
+LIB = libcrypto.a
+
+all: $(LIB)
+
+$(LIB): $(OBJ)
+	ar rcs $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(SECURITY_FLAGS) -Iinclude -c $< -o $@
+
+test: $(LIB)
+	$(CC) $(CFLAGS) $(TEST_FLAGS) tests/unit/*.c -o run_tests $(LIB)
+	./run_tests
+
+fuzz:
+	$(CC) $(CFLAGS) -fsanitize=fuzzer fuzz/*.c -o fuzz_target $(LIB)
+	./fuzz_target -max_total_time=300
+
+clean:
+	rm -f $(OBJ) $(LIB) run_tests fuzz_target
+
+.PHONY: all test fuzz clean
